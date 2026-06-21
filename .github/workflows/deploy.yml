@@ -1,0 +1,70 @@
+name: Deploy to GitHub Pages
+
+# Builds the static export and publishes it to GitHub Pages.
+#
+# One-time setup (repo owner): Settings → Pages → Build and deployment →
+# Source: "GitHub Actions". No secrets or custom domain config required —
+# this repo is a user/org site served at https://lateralmove.github.io/.
+
+on:
+  # Deploy on every push to main.
+  push:
+    branches: [main]
+  # Weekly rebuild so the site picks up new MITRE ATT&CK releases
+  # (`npm run data` always downloads the latest STIX bundle in CI).
+  schedule:
+    - cron: "0 6 * * 1" # Mondays 06:00 UTC
+  # Allow manual runs from the Actions tab.
+  workflow_dispatch:
+
+# Permissions needed to deploy to GitHub Pages.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Allow one concurrent deployment; don't cancel an in-progress one.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build ATT&CK data
+        run: npm run data # downloads + normalizes the STIX bundle -> public/data/
+
+      - name: Build static site
+        run: npm run build # next build with output: "export" -> out/
+
+      - name: Disable Jekyll
+        run: touch out/.nojekyll # serve _next/ assets verbatim (Pages skips Jekyll, this is belt-and-braces)
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: out
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
