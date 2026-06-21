@@ -7,10 +7,27 @@ import { getMeta } from "@/lib/data";
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
+const TITLE = "Lateral Move — Know every move before they make it";
+const DESCRIPTION =
+  "A faster, relationship-first browser for MITRE ATT&CK Enterprise — pivot across the adversary graph and surface coverage gaps, with no dead ends.";
+
 export const metadata: Metadata = {
-  title: "Lateral Move — Know every move before they make it",
-  description:
-    "A faster, relationship-first browser for MITRE ATT&CK Enterprise — pivot across the adversary graph and surface coverage gaps, with no dead ends.",
+  // Absolute base so social/messaging crawlers (WhatsApp, Slack, etc.) resolve og:image.
+  metadataBase: new URL("https://lateralmove.github.io"),
+  title: TITLE,
+  description: DESCRIPTION,
+  openGraph: {
+    type: "website",
+    siteName: "Lateral Move",
+    url: "/",
+    title: TITLE,
+    description: DESCRIPTION,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: TITLE,
+    description: DESCRIPTION,
+  },
 };
 
 // Apply the saved theme before paint to avoid a flash.
