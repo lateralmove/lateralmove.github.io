@@ -7,14 +7,11 @@ name: Deploy to GitHub Pages
 # this repo is a user/org site served at https://lateralmove.github.io/.
 
 on:
-  # Deploy on every push to main.
+  # Deploy only when code is pushed to main.
   push:
     branches: [main]
-  # Weekly rebuild so the site picks up new MITRE ATT&CK releases
-  # (`npm run data` always downloads the latest STIX bundle in CI).
-  schedule:
-    - cron: "0 6 * * 1" # Mondays 06:00 UTC
-  # Allow manual runs from the Actions tab.
+  # Allow manual runs from the Actions tab (e.g. to pick up a new MITRE
+  # ATT&CK release on demand — `npm run data` always fetches the latest STIX).
   workflow_dispatch:
 
 # Permissions needed to deploy to GitHub Pages.
