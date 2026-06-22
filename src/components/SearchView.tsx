@@ -38,7 +38,10 @@ export function SearchView() {
   const base = useMemo<IndexedDoc[]>(() => {
     if (!loaded) return [];
     if (!query.trim()) return loaded.docs;
-    return loaded.index.search(query).map((r) => r as unknown as IndexedDoc);
+    return loaded.index
+      .search(query)
+      .map((r) => loaded.byKey.get(r.id))
+      .filter((d): d is IndexedDoc => d !== undefined);
   }, [loaded, query]);
 
   // A doc passes the active filters. Pass `ignore` to skip one dimension so a
@@ -122,6 +125,13 @@ export function SearchView() {
           ref={inputRef}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
+          // Mobile keyboards (GBoard) autocorrect technical terms — "mimikatz" -> "Mimi katz",
+          // "T1059" -> "T 1059" — which wrecks results. Opt out of all keyboard "assistance".
+          autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="none"
+          spellCheck={false}
+          inputMode="search"
           placeholder="Search across all ATT&CK objects…"
           className="w-full rounded-lg border border-neutral-200 bg-transparent px-4 py-3 pr-11 text-sm outline-none focus:border-neutral-400 dark:border-neutral-700"
         />

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { CommandPalette } from "./CommandPalette";
+import { ShortcutHint } from "./ShortcutHint";
 import { ThemeToggle } from "./ThemeToggle";
 
 const NAV = [
@@ -64,7 +65,7 @@ export function SiteHeader() {
               className="flex items-center gap-2 rounded-md border border-neutral-200 px-2.5 py-1.5 text-sm text-neutral-500 hover:bg-neutral-100 dark:border-neutral-700 dark:hover:bg-neutral-800"
             >
               <span>Search</span>
-              <kbd className="hidden rounded border border-neutral-300 px-1 text-[10px] sm:inline dark:border-neutral-600">⌘K</kbd>
+              <ShortcutHint className="hidden rounded border border-neutral-300 px-1 text-[10px] sm:inline dark:border-neutral-600" />
             </button>
             <ThemeToggle />
             {/* Mobile menu toggle */}

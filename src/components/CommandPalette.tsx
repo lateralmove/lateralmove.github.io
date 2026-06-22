@@ -21,8 +21,12 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
 
   const results = useMemo<IndexedDoc[]>(() => {
     if (!loaded) return [];
-    if (!q.trim()) return loaded.docs.slice(0, 0);
-    return loaded.index.search(q).slice(0, 20).map((r) => r as unknown as IndexedDoc);
+    if (!q.trim()) return [];
+    return loaded.index
+      .search(q)
+      .slice(0, 20)
+      .map((r) => loaded.byKey.get(r.id))
+      .filter((d): d is IndexedDoc => d !== undefined);
   }, [q, loaded]);
 
   const choose = (d: IndexedDoc) => {
@@ -59,6 +63,13 @@ export function CommandPalette({ onClose }: { onClose: () => void }) {
               onClose();
             }
           }}
+          // Opt out of mobile-keyboard autocorrect/autocapitalize, which mangles
+          // technical search terms (e.g. "mimikatz" -> "Mimi katz").
+          autoComplete="off"
+          autoCorrect="off"
+          autoCapitalize="none"
+          spellCheck={false}
+          inputMode="search"
           placeholder="Search techniques, groups, software, mitigations…"
           className="w-full border-b border-neutral-200 bg-transparent px-4 py-3.5 text-sm outline-none placeholder:text-neutral-400 dark:border-neutral-800"
         />

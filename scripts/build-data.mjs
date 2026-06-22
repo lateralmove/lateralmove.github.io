@@ -9,6 +9,7 @@
 //     meta.json        - version + counts
 //     matrix.json      - ordered tactics -> techniques (with coverage flags) for the Smart Matrix
 //     search.json      - lightweight doc set for faceted client search
+//     search-index.json- pre-serialized MiniSearch index (skips client-side re-indexing)
 //     manifest.json    - entity ids per type (for generateStaticParams + list pages)
 //     entities/<type>/<id>.json - per-entity detail incl. resolved relationships (+ neighbors for the scoped graph)
 //
@@ -17,6 +18,8 @@
 import { mkdir, writeFile, readFile, rm, stat } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import path from "node:path";
+import MiniSearch from "minisearch";
+import { MINISEARCH_OPTIONS, toIndexedDocs } from "../src/lib/searchConfig.mjs";
 
 const ROOT = path.resolve(import.meta.dirname, "..");
 const CACHE = path.join(ROOT, ".cache");
@@ -451,6 +454,13 @@ async function main() {
   await writeFile(path.join(OUT, "matrix.json"), JSON.stringify(matrixOut));
   await writeFile(path.join(OUT, "search.json"), JSON.stringify(search));
   await writeFile(path.join(OUT, "manifest.json"), JSON.stringify(manifest));
+
+  // Pre-serialize the MiniSearch index so the client rehydrates it (loadJSON)
+  // instead of re-tokenizing every doc in the main thread on first ⌘K / search.
+  // Built from the same docs + options the client loads with (searchConfig.mjs).
+  const searchIndex = new MiniSearch(MINISEARCH_OPTIONS);
+  searchIndex.addAll(toIndexedDocs(search));
+  await writeFile(path.join(OUT, "search-index.json"), JSON.stringify(searchIndex.toJSON()));
 
   const counts = Object.fromEntries(Object.entries(manifest).map(([k, v]) => [k, v.length]));
   const meta = {

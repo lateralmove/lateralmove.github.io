@@ -1,4 +1,5 @@
 import { MatrixView } from "@/components/matrix";
+import { ShortcutHint } from "@/components/ShortcutHint";
 import { getMeta } from "@/lib/data";
 
 export default async function Home() {
@@ -16,7 +17,7 @@ export default async function Home() {
           <p className="mt-1 text-sm text-neutral-500">
             A faster, relationship-first way to browse MITRE ATT&CK — pivot through techniques,
             groups, and coverage gaps, with no dead ends. Press{" "}
-            <kbd className="rounded border px-1 text-[10px] dark:border-neutral-600">⌘K</kbd> to search.
+            <ShortcutHint className="rounded border px-1 text-[10px] dark:border-neutral-600" /> to search.
           </p>
         </div>
         <div className="flex flex-wrap gap-3 text-xs text-neutral-500">
