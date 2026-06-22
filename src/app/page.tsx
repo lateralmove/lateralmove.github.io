@@ -1,9 +1,9 @@
 import { MatrixView } from "@/components/matrix";
 import { ShortcutHint } from "@/components/ShortcutHint";
-import { getMeta } from "@/lib/data";
+import { getMatrix, getMeta } from "@/lib/data";
 
 export default async function Home() {
-  const meta = await getMeta();
+  const [meta, matrix] = await Promise.all([getMeta(), getMatrix()]);
   const c = meta.counts;
   return (
     <div className="space-y-5">
@@ -35,7 +35,7 @@ export default async function Home() {
           ))}
         </div>
       </div>
-      <MatrixView />
+      <MatrixView initialData={matrix} />
     </div>
   );
 }

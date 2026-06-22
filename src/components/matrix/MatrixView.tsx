@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { MatrixData, TacticColumn, TechCard } from "@/lib/types";
+import type { MatrixData, TechCard } from "@/lib/types";
 import type { Overlay } from "./cells";
 import { GroupPicker } from "./GroupPicker";
 import { SectionsView, PanelsView, TabsView, HeatmapView } from "./views";
@@ -17,20 +17,17 @@ const VIEWS: { key: View; label: string }[] = [
 
 const VIEW_KEY = "better-attack:matrix-view";
 
-export function MatrixView() {
-  const [data, setData] = useState<MatrixData | null>(null);
+export function MatrixView({ initialData }: { initialData: MatrixData }) {
+  // Rendered server-side and passed in, so the first paint already contains the
+  // full grid (good for crawlers + perceived speed) instead of fetching after mount.
+  const data = initialData;
   const [platform, setPlatform] = useState("all");
   const [query, setQuery] = useState("");
   const [overlay, setOverlay] = useState<Overlay>("none");
   const [showSub, setShowSub] = useState(true);
-  const [view, setView] = useState<View>(() => {
-    if (typeof window === "undefined") return "sections";
-    try {
-      const saved = localStorage.getItem(VIEW_KEY) as View | null;
-      if (saved && VIEWS.some((v) => v.key === saved)) return saved;
-    } catch {}
-    return "sections";
-  });
+  // Start on "sections" so the SSR and first client render match; restore the saved
+  // preference after mount (reading localStorage during render would mismatch).
+  const [view, setView] = useState<View>("sections");
   const filterRef = useRef<HTMLInputElement>(null);
 
   // group overlay
@@ -39,13 +36,17 @@ export function MatrixView() {
   const [groupSet, setGroupSet] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    fetch("/data/matrix.json").then((r) => r.json()).then(setData);
+    try {
+      const saved = localStorage.getItem(VIEW_KEY) as View | null;
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- restore client-only preference after mount to match SSR
+      if (saved && VIEWS.some((v) => v.key === saved)) setView(saved);
+    } catch {}
   }, []);
 
-  // Focus the filter field once the matrix renders so users can type immediately.
+  // Focus the filter field on load so users can type immediately.
   useEffect(() => {
-    if (data) filterRef.current?.focus();
-  }, [data]);
+    filterRef.current?.focus();
+  }, []);
 
   const chooseView = (v: View) => {
     setView(v);
@@ -55,7 +56,6 @@ export function MatrixView() {
   };
 
   const platforms = useMemo(() => {
-    if (!data) return [];
     const s = new Set<string>();
     for (const t of data.tactics) for (const tech of t.techniques) tech.platforms.forEach((p) => s.add(p));
     return [...s].sort();
@@ -72,7 +72,6 @@ export function MatrixView() {
 
   const q = query.trim().toLowerCase();
   const { columns, shown, total } = useMemo(() => {
-    if (!data) return { columns: [] as TacticColumn[], shown: 0, total: 0 };
     const matchTech = (t: TechCard) =>
       (platform === "all" || t.platforms.includes(platform)) &&
       (q === "" || t.name.toLowerCase().includes(q) || t.id.toLowerCase().includes(q));
@@ -102,8 +101,6 @@ export function MatrixView() {
     });
     return { columns, shown: shownIds.size, total: totalIds.size };
   }, [data, platform, q, showSub]);
-
-  if (!data) return <div className="py-20 text-center text-neutral-400">Loading matrix…</div>;
 
   const viewProps = { columns, overlay, groupSet, showSub };
 
