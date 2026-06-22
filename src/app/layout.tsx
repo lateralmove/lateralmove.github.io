@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { SiteHeader } from "@/components/SiteHeader";
 import { getMeta } from "@/lib/data";
+import { SITE_URL } from "@/lib/seo";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
@@ -13,7 +14,7 @@ const DESCRIPTION =
 
 export const metadata: Metadata = {
   // Absolute base so social/messaging crawlers (WhatsApp, Slack, etc.) resolve og:image.
-  metadataBase: new URL("https://lateralmove.github.io"),
+  metadataBase: new URL(SITE_URL),
   title: TITLE,
   description: DESCRIPTION,
   openGraph: {
