@@ -175,6 +175,13 @@ export function SearchView() {
     }
   };
 
+  // Rank tactics by the canonical kill-chain order (from meta.json) so the facet
+  // reads top-to-bottom like the matrix, not alphabetically. Unknowns sort last.
+  const tacticRank = useMemo(() => {
+    const order = new Map((loaded?.tacticOrder ?? []).map((name, i) => [name, i]));
+    return (name: string) => order.get(name) ?? Number.MAX_SAFE_INTEGER;
+  }, [loaded]);
+
   // Cross-filtered facet options: each facet counts the set filtered by the OTHER
   // facets, and only keeps options that would still yield results (or are already
   // selected). This makes any selection that produces 0 results impossible to pick.
@@ -192,10 +199,12 @@ export function SearchView() {
     return {
       types: ALL_TYPES.map((t) => [t, typeCount.get(t) ?? 0] as const).filter(([t, n]) => n > 0 || types.has(t)),
       platforms: [...platCount.entries()].sort((a, b) => b[1] - a[1]).filter(([p, n]) => n > 0 || platforms.has(p)),
-      tactics: [...tacCount.entries()].sort((a, b) => a[0].localeCompare(b[0])).filter(([t, n]) => n > 0 || tactics.has(t)),
+      tactics: [...tacCount.entries()]
+        .sort((a, b) => tacticRank(a[0]) - tacticRank(b[0]) || a[0].localeCompare(b[0]))
+        .filter(([t, n]) => n > 0 || tactics.has(t)),
       missing,
     };
-  }, [base, passes, types, platforms, tactics]);
+  }, [base, passes, types, platforms, tactics, tacticRank]);
 
   const toggle = <T,>(set: Set<T>, val: T, setter: (s: Set<T>) => void) => {
     const next = new Set(set);

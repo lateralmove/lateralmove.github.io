@@ -193,6 +193,8 @@ export interface Meta {
   generatedAt: string;
   source: string;
   counts: Record<string, number>;
+  /** Canonical kill-chain tactic order, for sorting the search tactic facet. */
+  tactics?: string[];
 }
 
 export type Manifest = Record<EntityType, string[]>;

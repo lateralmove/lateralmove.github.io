@@ -470,6 +470,9 @@ async function main() {
     generatedAt: new Date().toISOString(),
     source: SRC_URL,
     counts,
+    // Canonical kill-chain tactic order (from the matrix's tactic_refs), so the
+    // search facet can sort tactics naturally instead of alphabetically.
+    tactics: orderedTactics.map((t) => t.name),
   };
   await writeFile(path.join(OUT, "meta.json"), JSON.stringify(meta, null, 2));
 

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import MiniSearch from "minisearch";
-import type { SearchDoc } from "./types";
+import type { Meta, SearchDoc } from "./types";
 import { MINISEARCH_OPTIONS, toIndexedDocs } from "./searchConfig.mjs";
 
 export interface IndexedDoc extends SearchDoc {
@@ -14,6 +14,8 @@ interface Loaded {
   index: MiniSearch<IndexedDoc>;
   /** key (`type:id`) -> doc. Search results carry only their key; hydrate via this. */
   byKey: Map<string, IndexedDoc>;
+  /** Canonical kill-chain tactic order, for sorting the tactic facet naturally. */
+  tacticOrder: string[];
 }
 
 let cache: Loaded | null = null;
@@ -27,14 +29,15 @@ async function load(): Promise<Loaded> {
     // built at build time (scripts/build-data.mjs) and rehydrated here via
     // loadJSON, which skips re-tokenizing the ~1,900-doc corpus — the heaviest part
     // of building the index, previously paid on the main thread on first search.
-    const [raw, indexText] = await Promise.all([
+    const [raw, indexText, meta] = await Promise.all([
       fetch("/data/search.json").then((r) => r.json() as Promise<SearchDoc[]>),
       fetch("/data/search-index.json").then((r) => r.text()),
+      fetch("/data/meta.json").then((r) => r.json() as Promise<Meta>),
     ]);
     const docs = toIndexedDocs(raw);
     const index = MiniSearch.loadJSON<IndexedDoc>(indexText, MINISEARCH_OPTIONS);
     const byKey = new Map(docs.map((d) => [d.key, d]));
-    cache = { docs, index, byKey };
+    cache = { docs, index, byKey, tacticOrder: meta.tactics ?? [] };
     return cache;
   })();
   return inflight;
