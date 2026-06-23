@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { TacticColumn } from "@/lib/types";
+import { plural } from "@/lib/plural";
 import { Cell, CompactRow, HeatCell, heatItems, type Overlay, type ViewProps } from "./cells";
 
 const nonEmpty = (cols: TacticColumn[]) => cols.filter((t) => t.techniques.length > 0);
@@ -101,7 +102,7 @@ export function TabsView(props: ViewProps) {
       ) : (
         <div>
           <h2 className="mb-2 text-sm font-semibold">
-            {current.name} <span className="text-neutral-400">— {current.techniques.length} techniques</span>
+            {current.name} <span className="text-neutral-400">— {plural(current.techniques.length, "technique")}</span>
           </h2>
           <div className={TECH_GRID}>
             {current.techniques.map((t) => (

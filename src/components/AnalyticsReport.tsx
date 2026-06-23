@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useSearchIndex } from "@/lib/searchClient";
 import { reportBySlug } from "@/lib/reports";
+import { plural } from "@/lib/plural";
 import { RankedBars } from "./RankedBars";
 
 export function AnalyticsReport({ slug }: { slug: string }) {
@@ -34,7 +35,7 @@ export function AnalyticsReport({ slug }: { slug: string }) {
         <div className="py-20 text-center text-neutral-400">Loading…</div>
       ) : (
         <>
-          <div className="text-sm text-neutral-400">{items.length} results</div>
+          <div className="text-sm text-neutral-400">{plural(items.length, "result")}</div>
           <div className="card p-4">
             <RankedBars items={items} unit={report.unit} showRank />
           </div>

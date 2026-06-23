@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { hrefFor, TYPE_META, ALL_TYPES } from "@/lib/entities";
 import { useSearchIndex, type IndexedDoc } from "@/lib/searchClient";
+import { plural } from "@/lib/plural";
 import type { EntityType } from "@/lib/types";
 
 /** Everything the URL round-trips, so a search is shareable / bookmarkable. */
@@ -314,7 +315,7 @@ export function SearchView() {
 
         {/* results */}
         <div>
-          <div className="mb-2 text-sm text-neutral-400">{results.length} results</div>
+          <div className="mb-2 text-sm text-neutral-400">{plural(results.length, "result")}</div>
           <ul id="search-results" role="listbox" aria-label="Search results" ref={listRef} className="space-y-2">
             {visible.map((d, i) => (
               <li key={`${d.type}:${d.id}`}>
@@ -340,8 +341,8 @@ export function SearchView() {
                     {(d.tactics ?? []).map((t) => (
                       <span key={t}>{t}</span>
                     ))}
-                    {typeof d.groups === "number" && d.groups > 0 && <span>{d.groups} groups</span>}
-                    {typeof d.techniques === "number" && <span>{d.techniques} techniques</span>}
+                    {typeof d.groups === "number" && d.groups > 0 && <span>{plural(d.groups, "group")}</span>}
+                    {typeof d.techniques === "number" && <span>{plural(d.techniques, "technique")}</span>}
                     {d.type === "technique" && (
                       <span className={d.hasMitigation ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}>
                         {d.hasMitigation ? "✓ mitigation" : "✗ no mitigation"}

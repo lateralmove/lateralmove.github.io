@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Entity, Technique } from "@/lib/types";
 import { TYPE_META } from "@/lib/entities";
 import { entityJsonLd } from "@/lib/seo";
+import { plural } from "@/lib/plural";
 import { TypeChip, CoverageBadge } from "./Chip";
 import { Markdown } from "./Markdown";
 import { RelationshipSection } from "./RelationshipSection";
@@ -214,7 +215,7 @@ function DetectionBlock({ t }: { t: Technique }) {
         <h3 className="text-sm font-semibold">Detection strategies</h3>
         <span className="font-mono text-xs text-neutral-400">{s.id}</span>
         <span className="text-sm text-neutral-600 dark:text-neutral-300">{s.name}</span>
-        <span className="text-xs text-neutral-400">· {s.analytics.length} analytics</span>
+        <span className="text-xs text-neutral-400">· {plural(s.analytics.length, "analytic")}</span>
       </div>
       <ul className="space-y-2">
         {s.analytics.map((a) => (

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { MatrixData, TechCard } from "@/lib/types";
+import { plural } from "@/lib/plural";
 import type { Overlay } from "./cells";
 import { GroupPicker } from "./GroupPicker";
 import { SectionsView, PanelsView, TabsView, HeatmapView } from "./views";
@@ -176,7 +177,7 @@ export function MatrixView({ initialData }: { initialData: MatrixData }) {
           )}
           {overlay === "group" && groupId && (
             <span className="text-xs text-neutral-400">
-              {[...groupSet].length} techniques attributed to {groupName}
+              {plural([...groupSet].length, "technique")} attributed to {groupName}
             </span>
           )}
         </div>
