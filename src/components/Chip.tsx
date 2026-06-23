@@ -1,13 +1,24 @@
+import Link from "next/link";
 import { TYPE_META } from "@/lib/entities";
 import type { EntityType } from "@/lib/types";
 
-export function TypeChip({ type }: { type: EntityType }) {
+/** Colored type pill (dot + label). Pass `href` to make it a clickable link, e.g. the
+ *  leading breadcrumb crumb that filters search to this type. */
+export function TypeChip({ type, href }: { type: EntityType; href?: string }) {
   const m = TYPE_META[type];
-  return (
-    <span className={`chip ${m.chip}`}>
+  const cls = `chip ${m.chip}`;
+  const inner = (
+    <>
       <span className={`h-1.5 w-1.5 rounded-full ${m.dot}`} />
       {m.label}
-    </span>
+    </>
+  );
+  return href ? (
+    <Link href={href} className={`${cls} transition-opacity hover:opacity-70`}>
+      {inner}
+    </Link>
+  ) : (
+    <span className={cls}>{inner}</span>
   );
 }
 

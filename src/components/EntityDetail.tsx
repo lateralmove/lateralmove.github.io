@@ -1,6 +1,5 @@
 import Link from "next/link";
 import type { Entity, Technique } from "@/lib/types";
-import { TYPE_META } from "@/lib/entities";
 import { entityJsonLd } from "@/lib/seo";
 import { plural } from "@/lib/plural";
 import { TypeChip, CoverageBadge } from "./Chip";
@@ -21,10 +20,8 @@ export function EntityDetail({ entity }: { entity: Entity }) {
       />
       {/* header */}
       <header className="space-y-3">
-        <Breadcrumb entity={entity} />
         <div className="flex flex-wrap items-center gap-2 text-sm">
-          <TypeChip type={entity.type} />
-          <span className="font-mono text-neutral-400">{entity.id}</span>
+          <Breadcrumb entity={entity} />
           {entity.type === "software" && (
             <span className="chip">{(entity as Extract<Entity, { type: "software" }>).softwareType}</span>
           )}
@@ -57,25 +54,26 @@ export function EntityDetail({ entity }: { entity: Entity }) {
 }
 
 function Breadcrumb({ entity }: { entity: Entity }) {
-  // "Matrix" is omitted — it's already the home link in the top header. For a
-  // sub-technique, slot its parent technique in before the leaf.
+  // Leads with the colored type chip (clickable → search filtered to this type), then
+  // the parent technique for a sub-technique, then the current id (not a link). "Matrix"
+  // is omitted — the header already links home.
   const parent = entity.type === "technique" ? (entity as Technique).parent : null;
-  const links: { label: string; href: string; mono?: boolean }[] = [
-    { label: TYPE_META[entity.type].plural, href: `/search/?type=${entity.type}` },
-  ];
-  if (parent) links.push({ label: parent.id, href: `/techniques/${parent.id}/`, mono: true });
 
   return (
     <nav aria-label="Breadcrumb" className="text-xs text-neutral-400">
       <ol className="flex flex-wrap items-center gap-1.5">
-        {links.map((c) => (
-          <li key={c.href} className="flex items-center gap-1.5">
-            <Link href={c.href} className={`hover:underline ${c.mono ? "font-mono" : ""}`}>
-              {c.label}
+        <li className="flex items-center gap-1.5">
+          <TypeChip type={entity.type} href={`/search/?type=${entity.type}`} />
+          <span aria-hidden="true">/</span>
+        </li>
+        {parent && (
+          <li className="flex items-center gap-1.5">
+            <Link href={`/techniques/${parent.id}/`} className="font-mono hover:underline">
+              {parent.id}
             </Link>
             <span aria-hidden="true">/</span>
           </li>
-        ))}
+        )}
         <li aria-current="page" className="font-mono text-neutral-500 dark:text-neutral-300">
           {entity.id}
         </li>

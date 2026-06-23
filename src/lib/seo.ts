@@ -90,7 +90,8 @@ export function entityJsonLd(
   const name = `${e.id} ${e.name}`;
   const description = metaDescription(e.description) || undefined;
   const crumbs: { name: string; item?: string }[] = [
-    { name: TYPE_META[type].plural, item: abs(`/search/?type=${type}`) },
+    // Singular type label, to mirror the on-page chip crumb (e.g. "Technique").
+    { name: TYPE_META[type].label, item: abs(`/search/?type=${type}`) },
   ];
   if (parent) crumbs.push({ name: `${parent.id} ${parent.name}`, item: abs(hrefFor("technique", parent.id)) });
   crumbs.push({ name }); // current page — no `item`, per schema.org guidance
