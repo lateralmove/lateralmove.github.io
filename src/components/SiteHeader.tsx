@@ -18,7 +18,6 @@ const NAV = [
 export function SiteHeader() {
   const pathname = usePathname();
   const [paletteOpen, setPaletteOpen] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -30,10 +29,6 @@ export function SiteHeader() {
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
   }, []);
-
-  // Close the mobile menu when navigation changes the route.
-  // eslint-disable-next-line react-hooks/set-state-in-effect -- intentional sync to the router: the menu must collapse on navigation
-  useEffect(() => setMobileOpen(false), [pathname]);
 
   const navItemClass = (active: boolean) =>
     "rounded-md px-2.5 py-1.5 " +
@@ -59,42 +54,28 @@ export function SiteHeader() {
             ))}
           </nav>
 
+          {/* Mobile nav: just Search + Analytics — no command palette, no burger menu. */}
+          <nav className="flex items-center gap-1 text-sm md:hidden">
+            <Link href="/search/" className={navItemClass(isActive("/search/"))}>
+              Search
+            </Link>
+            <Link href="/analytics/" className={navItemClass(isActive("/analytics/"))}>
+              Analytics
+            </Link>
+          </nav>
+
           <div className="ml-auto flex items-center gap-2">
+            {/* Command palette opener — desktop only; mobile uses the Search link above. */}
             <button
               onClick={() => setPaletteOpen(true)}
-              className="flex items-center gap-2 rounded-md border border-neutral-200 px-2.5 py-1.5 text-sm text-neutral-500 hover:bg-neutral-100 dark:border-neutral-700 dark:hover:bg-neutral-800"
+              className="hidden items-center gap-2 rounded-md border border-neutral-200 px-2.5 py-1.5 text-sm text-neutral-500 hover:bg-neutral-100 md:flex dark:border-neutral-700 dark:hover:bg-neutral-800"
             >
               <span>Search</span>
               <ShortcutHint className="hidden rounded border border-neutral-300 px-1 text-[10px] sm:inline dark:border-neutral-600" />
             </button>
             <ThemeToggle />
-            {/* Mobile menu toggle */}
-            <button
-              onClick={() => setMobileOpen((v) => !v)}
-              aria-label="Menu"
-              aria-expanded={mobileOpen}
-              className="rounded-md border border-neutral-200 px-2.5 py-1.5 text-sm hover:bg-neutral-100 md:hidden dark:border-neutral-700 dark:hover:bg-neutral-800"
-            >
-              {mobileOpen ? "✕" : "☰"}
-            </button>
           </div>
         </div>
-
-        {/* Mobile menu */}
-        {mobileOpen && (
-          <nav className="space-y-0.5 border-t border-neutral-200 px-2 py-2 text-sm md:hidden dark:border-neutral-800">
-            {NAV.map((n) => (
-              <Link
-                key={n.href}
-                href={n.href}
-                onClick={() => setMobileOpen(false)}
-                className={"block " + navItemClass(isActive(n.href))}
-              >
-                {n.label}
-              </Link>
-            ))}
-          </nav>
-        )}
       </header>
       {paletteOpen && <CommandPalette onClose={() => setPaletteOpen(false)} />}
     </>
