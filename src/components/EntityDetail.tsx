@@ -14,7 +14,12 @@ export function EntityDetail({ entity }: { entity: Entity }) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{
           __html: JSON.stringify(
-            entityJsonLd(entity.type, entity, entity.type === "technique" ? (entity as Technique).parent : null),
+            entityJsonLd(
+              entity.type,
+              entity,
+              entity.type === "technique" ? (entity as Technique).parent : null,
+              entity.type === "software" ? (entity as Extract<Entity, { type: "software" }>).softwareType : null,
+            ),
           ),
         }}
       />
@@ -22,9 +27,6 @@ export function EntityDetail({ entity }: { entity: Entity }) {
       <header className="space-y-3">
         <div className="flex flex-wrap items-center gap-2 text-sm">
           <Breadcrumb entity={entity} />
-          {entity.type === "software" && (
-            <span className="chip">{(entity as Extract<Entity, { type: "software" }>).softwareType}</span>
-          )}
           {entity.url && (
             <a href={entity.url} target="_blank" rel="noopener noreferrer" className="link ml-auto text-xs">
               View on attack.mitre.org ↗
@@ -54,10 +56,13 @@ export function EntityDetail({ entity }: { entity: Entity }) {
 }
 
 function Breadcrumb({ entity }: { entity: Entity }) {
-  // Leads with the colored type chip (clickable → search filtered to this type), then
-  // the parent technique for a sub-technique, then the current id (not a link). "Matrix"
+  // Leads with the colored type chip (clickable → search filtered to this type). The
+  // middle crumb is the parent technique (for a sub-technique) or the software sub-type
+  // (malware/tool, → search filtered to it), then the current id (not a link). "Matrix"
   // is omitted — the header already links home.
   const parent = entity.type === "technique" ? (entity as Technique).parent : null;
+  const softwareType =
+    entity.type === "software" ? (entity as Extract<Entity, { type: "software" }>).softwareType : null;
 
   return (
     <nav aria-label="Breadcrumb" className="text-xs text-neutral-400">
@@ -70,6 +75,14 @@ function Breadcrumb({ entity }: { entity: Entity }) {
           <li className="flex items-center gap-1.5">
             <Link href={`/techniques/${parent.id}/`} className="font-mono hover:underline">
               {parent.id}
+            </Link>
+            <span aria-hidden="true">/</span>
+          </li>
+        )}
+        {softwareType && (
+          <li className="flex items-center gap-1.5">
+            <Link href={`/search/?type=software&kind=${softwareType}`} className="hover:underline">
+              {softwareType}
             </Link>
             <span aria-hidden="true">/</span>
           </li>

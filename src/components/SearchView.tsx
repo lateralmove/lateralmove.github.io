@@ -2,11 +2,14 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { hrefFor, TYPE_META, ALL_TYPES } from "@/lib/entities";
 import { useSearchIndex, type IndexedDoc } from "@/lib/searchClient";
 import { plural } from "@/lib/plural";
 import type { EntityType } from "@/lib/types";
+
+/** Software sub-types (STIX malware vs tool), in display order. */
+const SW_KINDS = ["malware", "tool"] as const;
 
 /** Everything the URL round-trips, so a search is shareable / bookmarkable. */
 interface SearchState {
@@ -14,6 +17,8 @@ interface SearchState {
   types: Set<EntityType>;
   platforms: Set<string>;
   tactics: Set<string>;
+  /** Software sub-type filter ("malware" / "tool"). */
+  kinds: Set<string>;
   missingMit: boolean;
 }
 
@@ -26,11 +31,13 @@ function parseParams(params: ParamsLike): SearchState {
   const types = new Set(
     [...readCsv(params, "type")].filter((t): t is EntityType => ALL_TYPES.includes(t as EntityType)),
   );
+  const kinds = new Set([...readCsv(params, "kind")].filter((k) => (SW_KINDS as readonly string[]).includes(k)));
   return {
     q: params.get("q") ?? "",
     types,
     platforms: readCsv(params, "platform"),
     tactics: readCsv(params, "tactic"),
+    kinds,
     missingMit: params.get("missing") === "1",
   };
 }
@@ -47,6 +54,7 @@ function toQS(s: SearchState): string {
   add("type", s.types as Set<string>);
   add("platform", s.platforms);
   add("tactic", s.tactics);
+  add("kind", s.kinds);
   if (s.missingMit) p.set("missing", "1");
   return p.toString();
 }
@@ -55,7 +63,6 @@ export function SearchView() {
   const loaded = useSearchIndex();
   const params = useSearchParams();
   const router = useRouter();
-  const pathname = usePathname();
 
   // Initialize from the URL so a shared link (?q=…&type=…&platform=…) restores state.
   const [boot] = useState(() => parseParams(params));
@@ -63,6 +70,7 @@ export function SearchView() {
   const [types, setTypes] = useState<Set<EntityType>>(boot.types);
   const [platforms, setPlatforms] = useState<Set<string>>(boot.platforms);
   const [tactics, setTactics] = useState<Set<string>>(boot.tactics);
+  const [kinds, setKinds] = useState<Set<string>>(boot.kinds);
   const [missingMit, setMissingMit] = useState(boot.missingMit);
   const [limit, setLimit] = useState(60);
   const [active, setActive] = useState(-1); // keyboard-highlighted result row
@@ -79,26 +87,29 @@ export function SearchView() {
   // that changes the URL. Guarded by canonical comparison so our own writes don't loop.
   useEffect(() => {
     const fromUrl = parseParams(params);
-    const current: SearchState = { q: query, types, platforms, tactics, missingMit };
+    const current: SearchState = { q: query, types, platforms, tactics, kinds, missingMit };
     if (toQS(fromUrl) === toQS(current)) return;
     /* eslint-disable react-hooks/set-state-in-effect -- adopt external URL changes; guarded above so it can't loop */
     setQuery(fromUrl.q);
     setTypes(fromUrl.types);
     setPlatforms(fromUrl.platforms);
     setTactics(fromUrl.tactics);
+    setKinds(fromUrl.kinds);
     setMissingMit(fromUrl.missingMit);
     /* eslint-enable react-hooks/set-state-in-effect */
     focusSearchOnDesktop();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- only react to URL changes; including state would loop
   }, [params]);
 
-  // Reflect state back into the URL (replace, so typing doesn't spam history).
+  // Reflect state into the URL via history.replaceState (not router.replace): it
+  // keeps history clean while typing, and — unlike a same-route router.replace, which
+  // drops params being merged into an existing query on static export — reliably sets
+  // the full query. Compared against the live URL so we only write on real changes.
   useEffect(() => {
-    const qs = toQS({ q: query, types, platforms, tactics, missingMit });
-    if (qs === toQS(parseParams(params))) return;
-    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- write on state change only
-  }, [query, types, platforms, tactics, missingMit]);
+    const qs = toQS({ q: query, types, platforms, tactics, kinds, missingMit });
+    if (qs === toQS(parseParams(new URLSearchParams(window.location.search)))) return;
+    window.history.replaceState(null, "", `${window.location.pathname}${qs ? `?${qs}` : ""}`);
+  }, [query, types, platforms, tactics, kinds, missingMit]);
 
   // Keep the cursor in the search box once the index is ready (desktop only — on
   // mobile, popping the keyboard covers the results with no room to scroll past it).
@@ -118,14 +129,15 @@ export function SearchView() {
   // A doc passes the active filters. Pass `ignore` to skip one dimension so a
   // facet's counts reflect the OTHER selected facets (responsive faceting).
   const passes = useCallback(
-    (d: IndexedDoc, ignore?: "type" | "platform" | "tactic" | "coverage") => {
+    (d: IndexedDoc, ignore?: "type" | "platform" | "tactic" | "kind" | "coverage") => {
       if (ignore !== "type" && types.size && !types.has(d.type)) return false;
       if (ignore !== "platform" && platforms.size && !(d.platforms ?? []).some((p) => platforms.has(p))) return false;
       if (ignore !== "tactic" && tactics.size && !(d.tactics ?? []).some((t) => tactics.has(t))) return false;
+      if (ignore !== "kind" && kinds.size && !(d.type === "software" && d.kind !== undefined && kinds.has(d.kind))) return false;
       if (ignore !== "coverage" && missingMit && !(d.type === "technique" && d.hasMitigation === false)) return false;
       return true;
     },
-    [types, platforms, tactics, missingMit],
+    [types, platforms, tactics, kinds, missingMit],
   );
 
   const results = useMemo(() => {
@@ -147,7 +159,7 @@ export function SearchView() {
     setLimit(60);
     setActive(-1);
     /* eslint-enable react-hooks/set-state-in-effect */
-  }, [query, types, platforms, tactics, missingMit]);
+  }, [query, types, platforms, tactics, kinds, missingMit]);
 
   // Scroll the keyboard-highlighted row into view.
   useEffect(() => {
@@ -189,11 +201,13 @@ export function SearchView() {
     const typeCount = new Map<EntityType, number>();
     const platCount = new Map<string, number>();
     const tacCount = new Map<string, number>();
+    const kindCount = new Map<string, number>();
     let missing = 0;
     for (const d of base) {
       if (passes(d, "type")) typeCount.set(d.type, (typeCount.get(d.type) ?? 0) + 1);
       if (passes(d, "platform")) (d.platforms ?? []).forEach((p) => platCount.set(p, (platCount.get(p) ?? 0) + 1));
       if (passes(d, "tactic")) (d.tactics ?? []).forEach((t) => tacCount.set(t, (tacCount.get(t) ?? 0) + 1));
+      if (passes(d, "kind") && d.type === "software" && d.kind) kindCount.set(d.kind, (kindCount.get(d.kind) ?? 0) + 1);
       if (passes(d, "coverage") && d.type === "technique" && d.hasMitigation === false) missing += 1;
     }
     return {
@@ -202,9 +216,10 @@ export function SearchView() {
       tactics: [...tacCount.entries()]
         .sort((a, b) => tacticRank(a[0]) - tacticRank(b[0]) || a[0].localeCompare(b[0]))
         .filter(([t, n]) => n > 0 || tactics.has(t)),
+      kinds: SW_KINDS.map((k) => [k, kindCount.get(k) ?? 0] as const).filter(([k, n]) => n > 0 || kinds.has(k)),
       missing,
     };
-  }, [base, passes, types, platforms, tactics, tacticRank]);
+  }, [base, passes, types, platforms, tactics, kinds, tacticRank]);
 
   const toggle = <T,>(set: Set<T>, val: T, setter: (s: Set<T>) => void) => {
     const next = new Set(set);
@@ -214,11 +229,12 @@ export function SearchView() {
     focusSearchOnDesktop();
   };
 
-  const activeCount = types.size + platforms.size + tactics.size + (missingMit ? 1 : 0);
+  const activeCount = types.size + platforms.size + tactics.size + kinds.size + (missingMit ? 1 : 0);
   const clearAll = () => {
     setTypes(new Set());
     setPlatforms(new Set());
     setTactics(new Set());
+    setKinds(new Set());
     setMissingMit(false);
   };
 
@@ -294,6 +310,14 @@ export function SearchView() {
             <Facet title="Type">
               {facets.types.map(([t, n]) => (
                 <Check key={t} checked={types.has(t)} onChange={() => toggle(types, t, setTypes)} label={TYPE_META[t].plural} count={n} dot={TYPE_META[t].dot} />
+              ))}
+            </Facet>
+          )}
+
+          {facets.kinds.length > 0 && (
+            <Facet title="Software type">
+              {facets.kinds.map(([k, n]) => (
+                <Check key={k} checked={kinds.has(k)} onChange={() => toggle(kinds, k, setKinds)} label={k} count={n} />
               ))}
             </Facet>
           )}

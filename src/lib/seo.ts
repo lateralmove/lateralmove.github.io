@@ -85,6 +85,7 @@ export function entityJsonLd(
   type: EntityType,
   e: { id: string; name: string; description?: string | null; url?: string | null },
   parent?: { id: string; name: string } | null,
+  softwareKind?: string | null,
 ) {
   const url = abs(hrefFor(type, e.id));
   const name = `${e.id} ${e.name}`;
@@ -94,6 +95,7 @@ export function entityJsonLd(
     { name: TYPE_META[type].label, item: abs(`/search/?type=${type}`) },
   ];
   if (parent) crumbs.push({ name: `${parent.id} ${parent.name}`, item: abs(hrefFor("technique", parent.id)) });
+  if (softwareKind) crumbs.push({ name: softwareKind, item: abs(`/search/?type=software&kind=${softwareKind}`) });
   crumbs.push({ name }); // current page — no `item`, per schema.org guidance
   return {
     "@context": "https://schema.org",
