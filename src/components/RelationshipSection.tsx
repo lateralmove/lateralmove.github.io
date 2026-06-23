@@ -48,7 +48,7 @@ export function RelationshipSection({
             <li key={`${it.type}-${it.id}`} className="text-sm">
               <EntityLink item={it} />
               {it.description && (
-                <Markdown className="mt-1 text-xs text-neutral-600 dark:text-neutral-300">
+                <Markdown className="mt-1 max-w-3xl text-xs text-neutral-600 dark:text-neutral-300">
                   {it.description}
                 </Markdown>
               )}

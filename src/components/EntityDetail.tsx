@@ -236,7 +236,7 @@ function DetectionBlock({ t }: { t: Technique }) {
               {a.platforms.length > 0 && <span className="text-neutral-400">({a.platforms.join(", ")})</span>}
             </div>
             {a.description && (
-              <Markdown className="mt-0.5 text-neutral-600 dark:text-neutral-300">{a.description}</Markdown>
+              <Markdown className="mt-0.5 max-w-3xl text-neutral-600 dark:text-neutral-300">{a.description}</Markdown>
             )}
             <ul className="mt-0.5 list-inside list-disc text-neutral-500">
               {a.logSources.map((ls, i) => (
