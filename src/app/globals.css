@@ -9,6 +9,16 @@
 }
 
 @layer base {
+  /* Tell the browser which palette to render *native* UI in (select popups,
+     scrollbars, checkboxes). Without this, Windows Chrome paints the <select>
+     dropdown with a light background while the option text stays light —
+     unreadable in dark mode. Follows the .dark class so it tracks the toggle. */
+  html {
+    color-scheme: light;
+  }
+  html.dark {
+    color-scheme: dark;
+  }
   body {
     @apply bg-neutral-50 text-neutral-900 antialiased dark:bg-neutral-950 dark:text-neutral-100;
     font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
