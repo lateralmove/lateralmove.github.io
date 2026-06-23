@@ -144,13 +144,17 @@ function Sections({ entity }: { entity: Entity }) {
     case "mitigation":
       return <RelationshipSection title="Mitigates techniques" items={entity.relationships.mitigatesTechniques} />;
     case "data-component":
+      // Full-width stacked sections (not a half-width 2-col grid), and show every
+      // detected technique up front (initial = length disables the "Show all" collapse).
       return (
-        <div className="grid gap-4 sm:grid-cols-2">
-          <RelationshipSection title="Detects techniques" items={entity.relationships.detectsTechniques} />
+        <div className="space-y-4">
+          <RelationshipSection
+            title="Detects techniques"
+            items={entity.relationships.detectsTechniques}
+            initial={entity.relationships.detectsTechniques.length}
+          />
           <LogSources items={entity.logSources} />
-          <div className="sm:col-span-2">
-            <DetectionStrategyList items={entity.detectionStrategies} />
-          </div>
+          <DetectionStrategyList items={entity.detectionStrategies} />
         </div>
       );
   }
