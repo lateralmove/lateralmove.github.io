@@ -1,4 +1,7 @@
+import Link from "next/link";
 import type { Entity, Technique } from "@/lib/types";
+import { TYPE_META } from "@/lib/entities";
+import { entityJsonLd } from "@/lib/seo";
 import { TypeChip, CoverageBadge } from "./Chip";
 import { Markdown } from "./Markdown";
 import { RelationshipSection } from "./RelationshipSection";
@@ -6,8 +9,14 @@ import { RelationshipSection } from "./RelationshipSection";
 export function EntityDetail({ entity }: { entity: Entity }) {
   return (
     <div className="space-y-6">
+      {/* Structured data: breadcrumb trail + Article node (mirrors the visible breadcrumb below). */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(entityJsonLd(entity.type, entity)) }}
+      />
       {/* header */}
       <header className="space-y-3">
+        <Breadcrumb entity={entity} />
         <div className="flex flex-wrap items-center gap-2 text-sm">
           <TypeChip type={entity.type} />
           <span className="font-mono text-neutral-400">{entity.id}</span>
@@ -39,6 +48,30 @@ export function EntityDetail({ entity }: { entity: Entity }) {
       <Facts entity={entity} />
       <Sections entity={entity} />
     </div>
+  );
+}
+
+function Breadcrumb({ entity }: { entity: Entity }) {
+  return (
+    <nav aria-label="Breadcrumb" className="text-xs text-neutral-400">
+      <ol className="flex flex-wrap items-center gap-1.5">
+        <li>
+          <Link href="/" className="hover:underline">
+            Matrix
+          </Link>
+        </li>
+        <li aria-hidden="true">/</li>
+        <li>
+          <Link href={`/search/?type=${entity.type}`} className="hover:underline">
+            {TYPE_META[entity.type].plural}
+          </Link>
+        </li>
+        <li aria-hidden="true">/</li>
+        <li aria-current="page" className="font-mono text-neutral-500 dark:text-neutral-300">
+          {entity.id}
+        </li>
+      </ol>
+    </nav>
   );
 }
 

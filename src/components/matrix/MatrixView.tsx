@@ -167,10 +167,10 @@ export function MatrixView({ initialData }: { initialData: MatrixData }) {
           {overlay === "mitigation" && (
             <span className="flex items-center gap-3 text-xs text-neutral-400">
               <span className="inline-flex items-center gap-1">
-                <span className="h-2.5 w-2.5 rounded-sm bg-emerald-500" /> has mitigation
+                <span className="h-2.5 w-2.5 rounded-sm bg-blue-600" /> has mitigation
               </span>
               <span className="inline-flex items-center gap-1">
-                <span className="h-2.5 w-2.5 rounded-sm bg-rose-500" /> none
+                <span className="h-2.5 w-2.5 rounded-sm bg-orange-500" /> no mitigation
               </span>
             </span>
           )}

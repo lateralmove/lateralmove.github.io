@@ -6,6 +6,13 @@ import type { TacticColumn, TechCard } from "@/lib/types";
 
 export type Overlay = "none" | "mitigation" | "group";
 
+// Mitigation coverage uses a blue↔orange diverging pair rather than green/red: the
+// classic green/red is indistinguishable under the most common (red-green) color
+// blindness, whereas blue vs orange separates cleanly for all common CVD types.
+// (Card views also carry the redundant 🛡 / · glyph cue.)
+const MIT_COVERED = "#2563eb"; // blue-600
+const MIT_UNCOVERED = "#f97316"; // orange-500
+
 /** Shared props every matrix view receives from the orchestrator. */
 export interface ViewProps {
   columns: TacticColumn[];
@@ -37,8 +44,8 @@ export function Cell({ t, overlay, groupSet, showSub }: { t: TechCard } & Omit<V
   const tone =
     overlay === "mitigation"
       ? t.hasMitigation
-        ? "border-l-4 border-l-emerald-500"
-        : "border-l-4 border-l-rose-500"
+        ? "border-l-4 border-l-blue-600"
+        : "border-l-4 border-l-orange-500"
       : "";
   return (
     <div className={`card p-2 text-sm ${tone}`}>
@@ -82,8 +89,8 @@ export function CompactRow({ t, overlay, groupSet, showSub }: { t: TechCard } & 
   const accent =
     overlay === "mitigation"
       ? t.hasMitigation
-        ? "border-l-2 border-l-emerald-500"
-        : "border-l-2 border-l-rose-500"
+        ? "border-l-2 border-l-blue-600"
+        : "border-l-2 border-l-orange-500"
       : "";
   return (
     <li className={`pl-1.5 ${accent}`}>
@@ -119,7 +126,7 @@ export function CompactRow({ t, overlay, groupSet, showSub }: { t: TechCard } & 
 
 /** Color for a heatmap square given the active overlay. */
 function heatStyle(t: TechCard, overlay: Overlay, groupSet: Set<string>): string {
-  if (overlay === "mitigation") return t.hasMitigation ? "#10b981" : "#ef4444";
+  if (overlay === "mitigation") return t.hasMitigation ? MIT_COVERED : MIT_UNCOVERED;
   if (overlay === "group") return groupSet.has(t.id) ? "#fbbf24" : "rgba(120,120,120,0.18)";
   // default: heat by number of groups observed
   if (t.groups <= 0) return "rgba(120,120,120,0.18)";

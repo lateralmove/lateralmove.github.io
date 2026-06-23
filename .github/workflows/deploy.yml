@@ -46,6 +46,11 @@ jobs:
 
       - name: Build static site
         run: npm run build # next build with output: "export" -> out/
+        env:
+          # Cloudflare Web Analytics beacon token (public). Set as a repo Variable:
+          # Settings → Secrets and variables → Actions → Variables → CF_BEACON_TOKEN.
+          # If unset, the beacon is simply omitted from the build.
+          NEXT_PUBLIC_CF_BEACON_TOKEN: ${{ vars.CF_BEACON_TOKEN }}
 
       - name: Disable Jekyll
         run: touch out/.nojekyll # serve _next/ assets verbatim (Pages skips Jekyll, this is belt-and-braces)

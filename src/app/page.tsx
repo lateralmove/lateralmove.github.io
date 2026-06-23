@@ -1,12 +1,18 @@
 import { MatrixView } from "@/components/matrix";
 import { ShortcutHint } from "@/components/ShortcutHint";
 import { getMatrix, getMeta } from "@/lib/data";
+import { siteJsonLd } from "@/lib/seo";
 
 export default async function Home() {
   const [meta, matrix] = await Promise.all([getMeta(), getMatrix()]);
   const c = meta.counts;
   return (
     <div className="space-y-5">
+      {/* Site-level structured data: WebSite + SearchAction (sitelinks search box) + Dataset credit. */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(siteJsonLd()) }}
+      />
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="text-xs font-medium uppercase tracking-wide text-neutral-400">

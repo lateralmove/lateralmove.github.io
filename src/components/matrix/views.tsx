@@ -159,7 +159,7 @@ export function HeatmapView({ columns, overlay, groupSet, showSub }: ViewProps) 
 function HeatLegend({ overlay }: { overlay: Overlay }) {
   const items: [string, string][] =
     overlay === "mitigation"
-      ? [["has mitigation", "#10b981"], ["none", "#ef4444"]]
+      ? [["has mitigation", "#2563eb"], ["no mitigation", "#f97316"]]
       : overlay === "group"
         ? [["used by group", "#fbbf24"], ["not used", "rgba(120,120,120,0.18)"]]
         : [["few groups", "rgba(59,130,246,0.25)"], ["many groups", "rgba(59,130,246,1)"], ["none", "rgba(120,120,120,0.18)"]];

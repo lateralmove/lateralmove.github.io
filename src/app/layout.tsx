@@ -34,17 +34,29 @@ export const metadata: Metadata = {
 // Apply the saved theme before paint to avoid a flash.
 const themeScript = `(function(){try{var t=localStorage.getItem('theme');var d=t?t==='dark':window.matchMedia('(prefers-color-scheme: dark)').matches;document.documentElement.classList.toggle('dark',d);}catch(e){}})();`;
 
+// Cloudflare Web Analytics beacon token. Cookieless + privacy-first, so no consent
+// banner is needed. Read from the env at build time (NEXT_PUBLIC_ → inlined), so it's
+// only emitted in production builds where the var is set — local dev/builds stay uncounted.
+const CF_BEACON_TOKEN = process.env.NEXT_PUBLIC_CF_BEACON_TOKEN;
+
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const meta = await getMeta();
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        {CF_BEACON_TOKEN && (
+          <script
+            defer
+            src="https://static.cloudflareinsights.com/beacon.min.js"
+            data-cf-beacon={JSON.stringify({ token: CF_BEACON_TOKEN })}
+          />
+        )}
       </head>
       <body className="flex min-h-full flex-col">
         <SiteHeader />
         <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6">{children}</main>
-        <footer className="space-y-1 border-t border-neutral-200 px-4 py-6 text-center text-xs text-neutral-400 dark:border-neutral-800">
+        <footer className="space-y-1 border-t border-neutral-200 px-4 py-6 text-center text-xs text-neutral-500 dark:border-neutral-800">
           <div>
             MITRE ATT&CK® Enterprise{meta.version ? ` v${meta.version}` : ""} (latest) · data from{" "}
             <a className="link" href="https://github.com/mitre-attack/attack-stix-data" target="_blank" rel="noopener noreferrer">
