@@ -56,8 +56,7 @@ export function AnalyticsView({ tacticOrder }: { tacticOrder: string[] }) {
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Coverage Analytics</h1>
         <p className="mt-1 text-sm text-neutral-500">
-          Aggregate views the official site makes you compute by hand. Click any panel title for the
-          full report. Enterprise domain.
+          Useful insights across the Enterprise ATT&CK domain. Click any panel title for the full ranking.
         </p>
       </div>
 
