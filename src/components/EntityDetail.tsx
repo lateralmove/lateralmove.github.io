@@ -13,7 +13,11 @@ export function EntityDetail({ entity }: { entity: Entity }) {
       {/* Structured data: breadcrumb trail + Article node (mirrors the visible breadcrumb below). */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(entityJsonLd(entity.type, entity)) }}
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(
+            entityJsonLd(entity.type, entity, entity.type === "technique" ? (entity as Technique).parent : null),
+          ),
+        }}
       />
       {/* header */}
       <header className="space-y-3">
@@ -53,21 +57,25 @@ export function EntityDetail({ entity }: { entity: Entity }) {
 }
 
 function Breadcrumb({ entity }: { entity: Entity }) {
+  // "Matrix" is omitted — it's already the home link in the top header. For a
+  // sub-technique, slot its parent technique in before the leaf.
+  const parent = entity.type === "technique" ? (entity as Technique).parent : null;
+  const links: { label: string; href: string; mono?: boolean }[] = [
+    { label: TYPE_META[entity.type].plural, href: `/search/?type=${entity.type}` },
+  ];
+  if (parent) links.push({ label: parent.id, href: `/techniques/${parent.id}/`, mono: true });
+
   return (
     <nav aria-label="Breadcrumb" className="text-xs text-neutral-400">
       <ol className="flex flex-wrap items-center gap-1.5">
-        <li>
-          <Link href="/" className="hover:underline">
-            Matrix
-          </Link>
-        </li>
-        <li aria-hidden="true">/</li>
-        <li>
-          <Link href={`/search/?type=${entity.type}`} className="hover:underline">
-            {TYPE_META[entity.type].plural}
-          </Link>
-        </li>
-        <li aria-hidden="true">/</li>
+        {links.map((c) => (
+          <li key={c.href} className="flex items-center gap-1.5">
+            <Link href={c.href} className={`hover:underline ${c.mono ? "font-mono" : ""}`}>
+              {c.label}
+            </Link>
+            <span aria-hidden="true">/</span>
+          </li>
+        ))}
         <li aria-current="page" className="font-mono text-neutral-500 dark:text-neutral-300">
           {entity.id}
         </li>

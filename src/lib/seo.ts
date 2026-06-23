@@ -75,22 +75,25 @@ const ARTICLE_TYPE: Record<EntityType, string> = {
 };
 
 /**
- * JSON-LD for an entity page: a BreadcrumbList (Matrix › <Type> › <entity>) plus an
- * Article node. Emitted as a single @graph in a <script type="application/ld+json">
- * so Google can render breadcrumb trails and richer snippets for the ~1,900 pages.
+ * JSON-LD for an entity page: a BreadcrumbList (<Type> › [parent] › <entity>) plus an
+ * Article node. Mirrors the on-page breadcrumb (which omits the "Matrix" home root,
+ * since the header already links home). Emitted as a single @graph in a
+ * <script type="application/ld+json"> so Google can render breadcrumb trails and
+ * richer snippets for the ~1,900 pages.
  */
 export function entityJsonLd(
   type: EntityType,
   e: { id: string; name: string; description?: string | null; url?: string | null },
+  parent?: { id: string; name: string } | null,
 ) {
   const url = abs(hrefFor(type, e.id));
   const name = `${e.id} ${e.name}`;
   const description = metaDescription(e.description) || undefined;
   const crumbs: { name: string; item?: string }[] = [
-    { name: "Matrix", item: abs("/") },
     { name: TYPE_META[type].plural, item: abs(`/search/?type=${type}`) },
-    { name }, // current page — no `item`, per schema.org guidance
   ];
+  if (parent) crumbs.push({ name: `${parent.id} ${parent.name}`, item: abs(hrefFor("technique", parent.id)) });
+  crumbs.push({ name }); // current page — no `item`, per schema.org guidance
   return {
     "@context": "https://schema.org",
     "@graph": [
