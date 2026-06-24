@@ -17,6 +17,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: abs("/"), lastModified, changeFrequency: "weekly", priority: 1 },
     { url: abs("/search/"), lastModified, changeFrequency: "monthly", priority: 0.7 },
     { url: abs("/analytics/"), lastModified, changeFrequency: "monthly", priority: 0.7 },
+    { url: abs("/about/"), lastModified, changeFrequency: "monthly", priority: 0.5 },
   ];
 
   const reportRoutes: MetadataRoute.Sitemap = RANK_REPORTS.map((r) => ({

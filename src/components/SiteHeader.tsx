@@ -64,7 +64,11 @@ export function SiteHeader() {
             </Link>
           </nav>
 
-          <div className="ml-auto flex items-center gap-2">
+          <div className="ml-auto flex items-center gap-2 text-sm">
+            {/* About — right-aligned, shown on both desktop and mobile. */}
+            <Link href="/about/" className={navItemClass(isActive("/about/"))}>
+              About
+            </Link>
             {/* Command palette opener — desktop only; mobile uses the Search link above. */}
             <button
               onClick={() => setPaletteOpen(true)}

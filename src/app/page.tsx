@@ -1,5 +1,4 @@
 import { MatrixView } from "@/components/matrix";
-import { ShortcutHint } from "@/components/ShortcutHint";
 import { getMatrix, getMeta } from "@/lib/data";
 import { siteJsonLd } from "@/lib/seo";
 
@@ -15,16 +14,9 @@ export default async function Home() {
       />
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <p className="text-xs font-medium uppercase tracking-wide text-neutral-400">
-            {meta.name}
-            {meta.version ? ` v${meta.version}` : ""} · Enterprise Matrix
-          </p>
-          <h1 className="mt-1 text-2xl font-bold tracking-tight">Know every move before they make it.</h1>
-          <p className="mt-1 text-sm text-neutral-500">
-            A faster, relationship-first way to browse MITRE ATT&CK — pivot through techniques,
-            groups, and coverage gaps, with no dead ends. Press{" "}
-            <ShortcutHint className="rounded border px-1 text-[10px] dark:border-neutral-600" /> to search.
-          </p>
+          <h1 className="text-xs font-medium tracking-wide text-neutral-400">
+            A faster way to browse Enterprise MITRE ATT&amp;CK{meta.version ? ` v${meta.version}` : ""} (latest)
+          </h1>
         </div>
         <div className="flex flex-wrap gap-3 text-xs text-neutral-500">
           {[

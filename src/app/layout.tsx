@@ -41,6 +41,10 @@ const CF_BEACON_TOKEN = process.env.NEXT_PUBLIC_CF_BEACON_TOKEN;
 
 export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const meta = await getMeta();
+  // Link the exact versioned STIX file this build was made from (matches the About page).
+  const stixHref = meta.version
+    ? `https://github.com/mitre-attack/attack-stix-data/blob/master/enterprise-attack/enterprise-attack-${meta.version}.json`
+    : "https://github.com/mitre-attack/attack-stix-data";
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`} suppressHydrationWarning>
       <head>
@@ -59,7 +63,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
         <footer className="space-y-1 border-t border-neutral-200 px-4 py-6 text-center text-xs text-neutral-500 dark:border-neutral-800">
           <div>
             MITRE ATT&CK® Enterprise{meta.version ? ` v${meta.version}` : ""} (latest) · data from{" "}
-            <a className="link" href="https://github.com/mitre-attack/attack-stix-data" target="_blank" rel="noopener noreferrer">
+            <a className="link" href={stixHref} target="_blank" rel="noopener noreferrer">
               attack-stix-data
             </a>
           </div>
