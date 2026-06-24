@@ -314,14 +314,6 @@ export function SearchView() {
             </Facet>
           )}
 
-          {facets.kinds.length > 0 && (
-            <Facet title="Software type">
-              {facets.kinds.map(([k, n]) => (
-                <Check key={k} checked={kinds.has(k)} onChange={() => toggle(kinds, k, setKinds)} label={k} count={n} />
-              ))}
-            </Facet>
-          )}
-
           {(facets.missing > 0 || missingMit) && (
             <Facet title="Coverage">
               <Check checked={missingMit} onChange={() => { setMissingMit((v) => !v); focusSearchOnDesktop(); }} label="Missing mitigation" count={facets.missing} />
@@ -340,6 +332,14 @@ export function SearchView() {
             <Facet title="Platform">
               {facets.platforms.map(([p, n]) => (
                 <Check key={p} checked={platforms.has(p)} onChange={() => toggle(platforms, p, setPlatforms)} label={p} count={n} />
+              ))}
+            </Facet>
+          )}
+
+          {facets.kinds.length > 0 && (
+            <Facet title="Software type">
+              {facets.kinds.map(([k, n]) => (
+                <Check key={k} checked={kinds.has(k)} onChange={() => toggle(kinds, k, setKinds)} label={k} count={n} />
               ))}
             </Facet>
           )}
