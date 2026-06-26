@@ -8,9 +8,9 @@ import { SITE_URL } from "@/lib/seo";
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
 
-const TITLE = "Lateral Move — Know every move before they make it";
+const TITLE = "Lateral Move: a faster way to browse Enterprise MITRE ATT&CK";
 const DESCRIPTION =
-  "A faster, relationship-first browser for MITRE ATT&CK Enterprise — pivot across the adversary graph and surface coverage gaps, with no dead ends.";
+  "A faster, easy-to-search way to browse the MITRE ATT&CK Enterprise knowledge base. Independent and open source.";
 
 export const metadata: Metadata = {
   // Absolute base so social/messaging crawlers (WhatsApp, Slack, etc.) resolve og:image.
